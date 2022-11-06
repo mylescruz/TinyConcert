@@ -1,0 +1,29 @@
+{% if name %}{% extends "baselogin.html" %}{% else %}{% extends "base.html" %}{%endif %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}Tiny Concert{% endblock %}
+
+{% block page_content %}
+    
+    
+<div class="page-header center">
+    <div class = "login-container center-stack">
+        <h1>Login</h1> 
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for msg in messages %}
+                    <p style="color:blue;">{{ msg }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        {{ wtf.quick_form(loginForm) }}
+        <div>
+            <h5>If you do not have an account, register here</h5>
+            <button onclick="window.location.href='register'">Register</button>
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}

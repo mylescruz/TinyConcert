@@ -1,0 +1,13 @@
+{% if name %}{% extends "baselogin.html" %}{% else %}{% extends "base.html" %}{%endif %}
+
+{% block title %}Tiny Concert{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Welcome to Tiny Concert!</h1>
+    <p>The Tiny Concert Series is an app designed by Myles Cruz that lets you register for upcoming concerts in our Tiny Concert Hall. 
+        To view our concerts, you may go to the "Concerts" tab. 
+        Logged in users will be able to select a concert and then select the seats they would like!
+    </p>
+</div>
+{% endblock %}

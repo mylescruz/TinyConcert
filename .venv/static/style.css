@@ -1,0 +1,79 @@
+/* login.html */
+.login-container {
+    width: 50%;
+}
+
+/* concerts.html */
+.musician-pic {
+    width: 300px;
+    height: 200px;
+    border-radius: 25px;
+    margin-left: 50px;
+    margin-right:50px;
+}
+
+.musician-name {
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.musician-date, .musician-time {
+    font-size: 16px;
+    text-align: center;
+}
+
+/* seatview.html */
+.seat {
+    height: 25px;
+    width: 25px;
+}
+
+.seat:hover {
+    background-color: aqua;
+}
+
+.center {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.center-stack {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+#stage {
+    background-color: #000000;
+    color: #FFFFFF; 
+    height: 50px; 
+    width: 300px; 
+    font-size: 40px;
+    margin: 10px;
+}
+
+#concert-details {
+    width: 100%;
+    height: 150px;
+    background-color: #F0F8FF;
+    color: #000000;
+}
+
+.seats td{
+    padding: 3px;
+}
+
+.venue {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

@@ -1,0 +1,22 @@
+{% if name %}{% extends "baselogin.html" %}{% else %}{% extends "base.html" %}{%endif %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}Tiny Concert{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Confirm Cancellation</h1>
+    Please re-enter your password to cancel your reservation.
+</div>
+
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        {% for msg in messages %}
+            <p style="color:red;">{{ msg }}</p>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+{{ wtf.quick_form(confirmationForm) }}
+
+{% endblock %}

@@ -1,0 +1,14 @@
+{% if name %}{% extends "baselogin.html" %}{% else %}{% extends "base.html" %}{%endif %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}Tiny Concert{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Seat Selection</h1>
+    Thank you {{ name }} for selecting seat: {{ row }}{{ seat }}
+</div>
+
+<button onclick="window.location.href='seatview?date={{date}}'">Return</button>
+
+{% endblock %}

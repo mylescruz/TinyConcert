@@ -1,0 +1,14 @@
+{% if name %}{% extends "baselogin.html" %}{% else %}{% extends "base.html" %}{%endif %}
+
+{% block title %}Tiny Concert{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Concert Selection</h1>
+    Thank you {% if name %}{{name}},{% endif %} for selecting {{ musician }} on {{date}}, continue to select a seat.
+</div>
+
+<button onclick="window.location.href='concerts'">Return</button>
+<button onclick="window.location.href='seatview'">Continue</button>
+
+{% endblock %}

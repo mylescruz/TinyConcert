@@ -1,0 +1,43 @@
+{% if name %}{% extends "baselogin.html" %}{% else %}{% extends "base.html" %}{%endif %}
+
+{% block title %}Tiny Concert Series: Concert List{% endblock %}
+
+{% block page_content %}
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    {% for msg in messages %}
+      <p style = "color: blue">{{ msg }}</p>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<div class="page-header">
+  <h1>Upcoming Concerts and Dates</h1>
+  <h4>Choose a concert to attend</h4>
+  <table>
+    <tbody>
+      <tr>
+        <td><a href = "seatview?date={{ dates[0] }}"><img src = "static/{{ images[0] }}" class = "musician-pic"></a></td>
+        <td><a href = "seatview?date={{ dates[1] }}"><img src = "static/{{ images[1] }}" class = "musician-pic"></a></td>
+        <td><a href = "seatview?date={{ dates[2] }}"><img src = "static/{{ images[2] }}" class = "musician-pic"></a></td>
+      </tr>
+      <tr>
+        <td class = "musician-name">{{ musicians[0] }}</td>
+        <td class = "musician-name">{{ musicians[1] }}</td>
+        <td class = "musician-name">{{ musicians[2] }}</td>
+      </tr>
+      <tr>
+        <td class = "musician-date">{{ dates[0] }}</td>
+        <td class = "musician-date">{{ dates[1] }}</td>
+        <td class = "musician-date">{{ dates[2] }}</td>
+      </tr>
+      <tr>
+        <td class = "musician-time">{{ times[0] }}</td>
+        <td class = "musician-time">{{ times[1] }}</td>
+        <td class = "musician-time">{{ times[2] }}</td>
+      </tr>    
+    </tbody>
+  </table>
+</div>
+{% endblock %}
