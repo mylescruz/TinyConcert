@@ -178,18 +178,6 @@ def seatview():
     date = request.args.get('date') # uses the date selected by user to determine which concert seats to view
 
     session['date'] = date
-    # session['seat'] = ""
-
-    # checks if a user is logged in and checks if the user has a reservation for the concert selected
-    # if session.get('email'):
-    #     file = "data/users/" + session.get('email') + "/" + date + ".txt"
-    #     try:
-    #         open(file)
-    #         with open(file,"r") as f:
-    #             session['seat'] = f.readline()
-    #             f.close()
-    #     except IOError:
-    #         session['seat'] = ""
 
     # gives the musician session variable a value to display for the user 
     concerts = Concerts()
@@ -203,42 +191,8 @@ def seatview():
 
     #rows = loadSeats(rows) # loads the seats' data for each row
     rows = loadSeatsOneFile(rows, date)
-    # arrays that store a seat's value for empty or taken
-    iconA = []
-    iconB = []
-    iconC = []
-    iconD = []
-    iconE = []
-    icons = [iconA,iconB,iconC,iconD,iconE]
-    # reservedSeat = "" 
-    # reservedIcon = "/static/occupied.png"
-    # availableIcon = "/static/empty.png"
-    
-    # sets up the occupied or empty icon for each seat in each row
-    #setupIcons(icons,rows)
-    # for i, row in rows:
-    #    setupRowIconsAndSeats(icons[i],rows)
 
-    # ValueError: too many values to unpack (expected 2)
-    setupRowIconsAndSeats(icons[A],rows[A])
-    setupRowIconsAndSeats(icons[B],rows[B])
-    setupRowIconsAndSeats(icons[C],rows[C])
-    setupRowIconsAndSeats(icons[D],rows[D])
-    setupRowIconsAndSeats(icons[E],rows[E])
-    
-    # if the user is logged in, it shows the user's current seats for that given concert
-    # if session.get('email'):
-    #     file = "data/users/" + session.get('email') + "/" + session.get('date') + ".txt"
-    #     try:
-    #         open(file)
-    #         with open(file,"r") as f:
-    #             line = f.readline()
-    #             reservedSeat = line
-    #             f.close()
-    #     except IOError: # if file does not exist, user does not have a reserved seat for that concert
-    #         reservedSeat = ""
-
-    return render_template('seatview.html', reserved = "/static/occupied.png", available = "/static/empty.png", icons = icons, musician = session.get('musician'), date = date, name=session.get('firstName'))
+    return render_template('seatview.html', reserved = "/static/occupied.png", available = "/static/empty.png", icons = rows, musician = session.get('musician'), date = date, name=session.get('firstName'))
 
 # determines which row and seat was selected and allocates the data
 @app.route("/seatSelect", methods=['GET','POST'])
@@ -436,16 +390,40 @@ def reserveSeatOneFile(rows, letter, row, seatNum, date):
     return row
 
 def loadSeatsOneFile(rows, date):
+    temp = rows.copy()
     seatsFile = "data/concerts/"+date+"/seats.txt"
     with open(seatsFile) as f:
         lines = f.readlines()
 
         for i, line in enumerate(lines):
-            rows[i] = re.split(',|\n',line)
+            temp[i] = re.split(',|\n',line)
 
         f.close()
 
-    return rows
+    seatLetter = 'A'
+    seatNum = 1
+    price = 100
+    empty = "/static/empty.png"
+    reserved = "/static/occupied.png"
+
+    for i, row in enumerate(temp):
+        seatNum = 1
+        
+        for j in range(0,NUM_SEATS):
+            if row[j] == "None":
+                seat = Seat(seatLetter,seatNum,"None",price,empty)
+                row[j] = seat
+            else:
+                seat = Seat(seatLetter,seatNum,"None",price,reserved)
+                row[j] = seat 
+            seatNum += 1
+        
+        seatLetter = chr(ord(seatLetter) + 1)
+        price -= 10
+
+    print(temp)
+
+    return temp
 
 def loadSeats(rows):
     # populates each row with new users info
@@ -464,27 +442,6 @@ def loadRows(row, data):
         line = f.readline()
         data = line.split(" ") # separates data in the line by a space
     return data
-
-# gives each seat in a row an empty or occupied value which is shown on the 'Seat View'
-def setupRowIconsAndSeats(icon, data):
-    for i, seat in enumerate(data):
-        if seat == "None":
-            icon.append("/static/empty.png")
-        else:
-            icon.append("/static/occupied.png")         
-
-# new setup to use the global arrays
-def setupIcons(icons,rows):
-    for i, row in rows:
-        for j, icon in icons:
-            if row[j] == "None":
-                icon[j].append("/static/empty.png")
-            else:
-                icon[j].append("/static/occupied.png")  
-            j += 1 
-
-    seat = Seat()
-
 
 # clears the user's name from the txt file that contains the concert's seats
 # date: used to get the file under a user's name to determine what seats to cancel

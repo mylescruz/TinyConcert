@@ -1,9 +1,9 @@
 class Seat: 
     row = 'A'
-    seatNum = '1'
-    user = 'None'
-    price = '0.00'
-    icon = 'empty.png'
+    seatNum = 1
+    user = "None"
+    price = "0.00"
+    icon = "/static/empty.png"
 
     def __init__(self, row, seatNum, user, price, icon):
         self.row = row
