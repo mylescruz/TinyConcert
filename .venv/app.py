@@ -45,6 +45,12 @@ rowC = []
 rowD = []
 rowE = []
 rows = [rowA,rowB,rowC,rowD,rowE]
+EMPTY = "/static/empty.png"
+RESERVED = "/static/occupied.png"
+FIRST_NAME_INDEX = 0
+LAST_NAME_INDEX = 1
+EMAIL_INDEX = 2
+PASSWORD_INDEX = 3
 
 # Registration form: allows user to register for the website
 class RegisterForm(FlaskForm):
@@ -101,9 +107,13 @@ def login():
             givenEmail = loginForm.email.data
             givenPassword = loginForm.password.data
             
-            if (givenEmail == userDetails[2]) & (givenPassword == userDetails[3]):
-                user = User(userDetails[0], userDetails[1], userDetails[2], userDetails[3])
-                #session['user'] = user.__dict__
+            # print("Given e: ", givenEmail, " given p: ", givenPassword)
+            # print("Known e: ", userDetails[EMAIL_INDEX], " known p: ", userDetails[PASSWORD_INDEX])
+
+            if (givenEmail == userDetails[EMAIL_INDEX]) & (givenPassword == userDetails[PASSWORD_INDEX]):
+                
+                user = User(userDetails[FIRST_NAME_INDEX], userDetails[LAST_NAME_INDEX], userDetails[EMAIL_INDEX], userDetails[PASSWORD_INDEX])
+        
                 session['email'] = user.getEmail()
                 session['password'] = user.getPassword()
                 session['firstName'] = user.getFirstName()
@@ -189,16 +199,15 @@ def seatview():
         flash('Must select a concert to view seats','error')
         return redirect(url_for('concerts'))
 
-    #rows = loadSeats(rows) # loads the seats' data for each row
-    rows = loadSeatsOneFile(rows, date)
+    rows = loadSeats(rows, date)
 
-    return render_template('seatview.html', reserved = "/static/occupied.png", available = "/static/empty.png", icons = rows, musician = session.get('musician'), date = date, name=session.get('firstName'))
+    return render_template('seatview.html', reserved = RESERVED, available = EMPTY, icons = rows, musician = session.get('musician'), date = date, name=session.get('firstName'))
 
 # determines which row and seat was selected and allocates the data
 @app.route("/seatSelect", methods=['GET','POST'])
 def seatselect():
 
-    if session.get('firstName') is None: # if there is no user logged in
+    if session.get('email') is None: # if there is no user logged in
         flash('Must login to reserve a seat','error') # flashes error message for next page being directed to
         return redirect(url_for('login'))
 
@@ -206,36 +215,37 @@ def seatselect():
     
     #rows = loadSeats(rows)
     row = request.args.get('row') # row is taken from the seat icon selected
-    seat = request.args.get('seat') # seat is taken from teh seat icon selected
+    seat = request.args.get('seat') # seat is taken from the seat icon selected
     seatNum = int(seat)
     date = session.get('date') # date is taken from the current session
 
     if(row == "A"):
-        if rows[A][seatNum] == "None":
+        user = rows[A][seatNum].getUser()
+        if user.getEmail() == "None":
             rows[A] = reserveSeat("A", rows[A], seatNum, date)
         else:
             flash('This seat is already reserved', 'error') # flashes error message for next page being directed to
             return redirect(url_for('seatview'))
     if(row == "B"):
-        if rows[B][seatNum] == "None":
+        if rows[B][seatNum].getEmail() == "None":
             rows[B] = reserveSeat("B", rows[B], seatNum, date)
         else:
             flash('This seat is already reserved', 'error') # flashes error message for next page being directed to
             return redirect(url_for('seatview'))
     if(row == "C"):
-        if rows[C][seatNum] == "None":
+        if rows[C][seatNum].getEmail() == "None":
             rows[C] = reserveSeat("C", rows[C], seatNum, date)
         else:
             flash('This seat is already reserved', 'error') # flashes error message for next page being directed to
             return redirect(url_for('seatview'))
     if(row == "D"):
-        if rows[D][seatNum] == "None":
+        if rows[D][seatNum].getEmail() == "None":
             rows[D] = reserveSeat("D", rows[D], seatNum, date)
         else:
             flash('This seat is already reserved', 'error') # flashes error message for next page being directed to
             return redirect(url_for('seatview'))
     if(row == "E"):
-        if rows[E][seatNum] == "None":
+        if rows[E][seatNum].getEmail() == "None":
             rows[E] = reserveSeat("E", rows[E], seatNum, date)
         else:
             flash('This seat is already reserved', 'error') # flashes error message for next page being directed to
@@ -264,7 +274,7 @@ def checkout():
 # displays a user's current reservations and allows the ability to cancel a reservation
 @app.route("/reservation", methods = ['GET','POST'])
 def reservation():
-    if session.get('user') is None: # a user must login to view their current reservations
+    if session.get('email') is None: # a user must login to view their current reservations
         flash('Must login to see your reservation') # flashes error message for next page being directed to
         return redirect(url_for('login'))
     
@@ -321,7 +331,6 @@ def StoreUser(form):
         f.write(user.getPassword())
         f.close()
     
-    #session['user'] = user.__dict__
     session['firstName'] = user.getFirstName()
     session['lastName'] = user.getLastName()
     session['email'] = user.getEmail()
@@ -352,7 +361,12 @@ def reserveSeat(letter, row, seatNum, date):
     # write new data into the txt file with 
     with open(file,"w") as f:
         for i, currentData in enumerate(row):
-            f.write(currentData)
+            print(currentData)
+            if isinstance(currentData, str):
+                f.write(currentData)
+            else:
+                user = currentData.getUser()
+                f.write(user.getEmail())
             f.write(" ")
    
         f.close()
@@ -389,77 +403,74 @@ def reserveSeatOneFile(rows, letter, row, seatNum, date):
 
     return row
 
-def loadSeatsOneFile(rows, date):
-    temp = rows.copy()
+def loadSeats(rows, date):
     seatsFile = "data/concerts/"+date+"/seats.txt"
     with open(seatsFile) as f:
         lines = f.readlines()
 
         for i, line in enumerate(lines):
-            temp[i] = re.split(',|\n',line)
+            rows[i] = re.split(',|\n',line)
 
         f.close()
 
-    seatLetter = 'A'
-    seatNum = 1
-    price = 100
-    empty = "/static/empty.png"
-    reserved = "/static/occupied.png"
-
-    for i, row in enumerate(temp):
+    for row in rows:
         seatNum = 1
         
-        for j in range(0,NUM_SEATS):
-            if row[j] == "None":
-                seat = Seat(seatLetter,seatNum,"None",price,empty)
-                row[j] = seat
+        for seatIndex in range(0,NUM_SEATS):
+            if row[seatIndex] == "None":
+                seatLetter = 'N'
+                seatNum = 0
+                price = 0
+                firstName = "None"
+                lastName = "None"
+                email = "None"
+                password = "None"
+                user = User(firstName, lastName, email, password)
+                seat = Seat(seatLetter, seatNum, user, price, EMPTY)
+                row[seatIndex] = seat
             else:
-                seat = Seat(seatLetter,seatNum,"None",price,reserved)
-                row[j] = seat 
+                userFile = "data/users/" + row[seatIndex] + "/" + "info.txt"
+
+                try:
+                    open(userFile)
+                except IOError:
+                    flash('User in seat.','error')
+                    return redirect(url_for('concerts'))
+                
+                with open(userFile,"r") as f:
+                    line = f.readline()
+                    userDetails = line.split()
+                    user = User(userDetails[FIRST_NAME_INDEX], userDetails[LAST_NAME_INDEX], userDetails[EMAIL_INDEX], userDetails[PASSWORD_INDEX])
+                    f.close()
+
+                seat = Seat(seatLetter, seatNum, user, price, RESERVED)
+                row[seatIndex] = seat 
             seatNum += 1
         
         seatLetter = chr(ord(seatLetter) + 1)
         price -= 10
 
-    print(temp)
-
-    return temp
-
-def loadSeats(rows):
-    # populates each row with new users info
-    rows[A] = loadRows("A",rowA)
-    rows[B] = loadRows("B",rowB)
-    rows[C] = loadRows("C",rowC)
-    rows[D] = loadRows("D",rowD)
-    rows[E] = loadRows("E",rowE)
+    # print(rows)
 
     return rows
-
-# loads data of each seat into the row
-def loadRows(row, data):
-    file = "data/concerts/"+session.get('date')+"/"+row+".txt"
-    with open(file) as f:
-        line = f.readline()
-        data = line.split(" ") # separates data in the line by a space
-    return data
 
 # clears the user's name from the txt file that contains the concert's seats
 # date: used to get the file under a user's name to determine what seats to cancel
 def cancelAnyReservationForUser(date):
-    global dataA
-    global dataB
-    global dataC
-    global dataD
-    global dataE
+    global rowA
+    global rowB
+    global rowC
+    global rowD
+    global rowE
 
     user = session.get('firstName')+session.get('lastName')            
 
     # checks each row to see if user has a seat reserved
-    removeUser(user, date, "A", dataA)
-    removeUser(user, date, "B", dataB)
-    removeUser(user, date, "C", dataC)
-    removeUser(user, date, "D", dataD)
-    removeUser(user, date, "E", dataE)
+    removeUser(user, date, "A", rowA)
+    removeUser(user, date, "B", rowB)
+    removeUser(user, date, "C", rowC)
+    removeUser(user, date, "D", rowD)
+    removeUser(user, date, "E", rowE)
 
     file = "data/users/" + session.get('email') + "/" + date + ".txt"
     # clears the user's file with the data stored of the seat they reserved
