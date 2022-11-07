@@ -1,13 +1,9 @@
-# Tiny Concert Series Project
+# Tiny Concert Project
 # By Myles Cruz 
 # Project originally created for class at St. Norbert College
 #   CSCI 322: Programming Languages, Dr. Ben Geisler
 # Created: December 4, 2020
-# Last Modified: February 21, 2021
-# To run website:
-#   Type command: "cd .venv"
-#   Type command: "python -m flask run"
-#   Use given link to access website
+# Last Modified: November 07, 2022
 
 from flask import Flask, flash, render_template, session, redirect, url_for, request
 from flask_wtf import FlaskForm
@@ -413,6 +409,8 @@ def loadSeats(rows, date):
 
         f.close()
 
+    price = 100
+
     for row in rows:
         seatNum = 1
         
@@ -420,7 +418,6 @@ def loadSeats(rows, date):
             if row[seatIndex] == "None":
                 seatLetter = 'N'
                 seatNum = 0
-                price = 0
                 firstName = "None"
                 lastName = "None"
                 email = "None"
