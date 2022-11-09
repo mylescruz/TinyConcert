@@ -19,8 +19,8 @@
             <div>
                 <h5> Your current reservation(s): </h5>
                 {% for i in range(0, datesLength) %}
-                    Date: {{ dates[i] }} Seat(s): {{ seats[i] }}
-                    <button onclick="window.location.href='cancelreservation?temp={{ dates[i] }}'">Cancel Reservation</button>
+                    Date: {{ dates[i] }} Musician: {{ musicians[i] }} Seat(s): {{ seats[i] }}
+                    <button onclick="window.location.href='cancelreservation?date={{ dates[i] }}'">Cancel Reservation</button>
                     <br>
                 {% endfor %}
             </div>
