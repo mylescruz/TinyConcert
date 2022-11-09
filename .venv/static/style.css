@@ -88,7 +88,7 @@
     content: attr(data-hover);
     visibility: hidden;
     opacity: 0;
-    width: 70px;
+    width: 50px;
     background-color: black;
     color: #fff;
     text-align: center;

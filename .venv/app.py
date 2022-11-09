@@ -23,11 +23,11 @@ bootstrap = Bootstrap(app)
 
 # global variables
 date = "None"
-A = 0
-B = 1
-C = 2
-D = 3
-E = 4
+A_INDEX = 0
+B_INDEX = 1
+C_INDEX = 2
+D_INDEX = 3
+E_INDEX = 4
 ROW_A_PRICE = 50
 ROW_B_PRICE = 45
 ROW_C_PRICE = 40
@@ -35,12 +35,12 @@ ROW_D_PRICE = 35
 ROW_E_PRICE = 30
 NUM_ROWS = 5
 NUM_SEATS = 10
-rowA = []
-rowB = []
-rowC = []
-rowD = []
-rowE = []
-rows = [rowA,rowB,rowC,rowD,rowE]
+ROW_A = []
+ROW_B = []
+ROW_C = []
+ROW_D = []
+ROW_E = []
+SEATS = [ROW_A,ROW_B,ROW_C,ROW_D,ROW_E]
 EMPTY = "/static/empty.png"
 RESERVED = "/static/occupied.png"
 FIRST_NAME_INDEX = 0
@@ -80,6 +80,7 @@ class ConfirmationForm(FlaskForm):
 # Home page
 @app.route("/", methods = ['GET'])
 def index():
+    session.clear()
     return redirect(url_for('concerts'))
     #return render_template('index.html', name=session.get('firstName'))
 
@@ -148,12 +149,8 @@ def register():
 # Logs out user by clearing all session data           
 @app.route("/logout", methods=['GET','POST'])
 def logout():
-    session.pop('firstName', None)
-    session.pop('lastName', None)
-    session.pop('email', None)
-    session.pop('password', None)
-    session.pop('seat', None)
-    session.pop('date', None)
+    session.clear()
+
     flash("Logout successful!")
     return redirect(url_for('login'))
 
@@ -179,7 +176,7 @@ def concerts():
 # displays the a concert's seats and their availability
 @app.route("/seatview", methods=['GET','POST'])
 def seatview():
-    global rows
+    global SEATS
 
     date = request.args.get('date') # uses the date selected by user to determine which concert seats to view
 
@@ -195,56 +192,60 @@ def seatview():
         flash('Must select a concert to view seats','error')
         return redirect(url_for('concerts'))
 
-    rows = loadSeats(rows, date)
+    SEATS = loadSeats(SEATS, date)
 
-    return render_template('seatview.html', reserved = RESERVED, available = EMPTY, icons = rows, musician = session.get('musician'), date = date, name=session.get('firstName'))
+    return render_template('seatview.html', reserved = RESERVED, available = EMPTY, seats = SEATS, musician = session.get('musician'), date = date, name = session.get('firstName'))
 
 # determines which row and seat was selected and allocates the data
 @app.route("/seatSelect", methods=['GET','POST'])
 def seatselect():
 
-    if session.get('email') is None: # if there is no user logged in
-        flash('Must login to reserve a seat','error') # flashes error message for next page being directed to
+    if session.get('email') is None:
+        flash('Must login to reserve a seat','error')
         return redirect(url_for('login'))
 
-    global rows
+    global SEATS
     
-    #rows = loadSeats(rows)
-    row = request.args.get('row') # row is taken from the seat icon selected
-    seat = request.args.get('seat') # seat is taken from the seat icon selected
+    #SEATS = loadSeats(SEATS)
+    row = request.args.get('row')
+    seat = request.args.get('seat')
     seatNum = int(seat)
-    date = session.get('date') # date is taken from the current session
+    date = request.args.get('date')
 
     if(row == "A"):
-        user = rows[A][seatNum].getUser()
+        user = SEATS[A_INDEX][seatNum].getUser()
         if user.getEmail() == "None":
-            rows[A] = reserveSeat("A", rows[A], seatNum, date)
+            SEATS[A_INDEX] = reserveSeat("A", SEATS[A_INDEX], seatNum, date)
         else:
-            flash('This seat is already reserved', 'error') # flashes error message for next page being directed to
+            flash('This seat is already reserved', 'error')
             return redirect(url_for('seatview'))
     if(row == "B"):
-        if rows[B][seatNum].getEmail() == "None":
-            rows[B] = reserveSeat("B", rows[B], seatNum, date)
+        user = SEATS[B_INDEX][seatNum].getUser()
+        if user.getEmail() == "None":
+            SEATS[B_INDEX] = reserveSeat("B", SEATS[B_INDEX], seatNum, date)
         else:
-            flash('This seat is already reserved', 'error') # flashes error message for next page being directed to
+            flash('This seat is already reserved', 'error')
             return redirect(url_for('seatview'))
     if(row == "C"):
-        if rows[C][seatNum].getEmail() == "None":
-            rows[C] = reserveSeat("C", rows[C], seatNum, date)
+        user = SEATS[C_INDEX][seatNum].getUser()
+        if user.getEmail() == "None":
+            SEATS[C_INDEX] = reserveSeat("C", SEATS[C_INDEX], seatNum, date)
         else:
-            flash('This seat is already reserved', 'error') # flashes error message for next page being directed to
+            flash('This seat is already reserved', 'error')
             return redirect(url_for('seatview'))
     if(row == "D"):
-        if rows[D][seatNum].getEmail() == "None":
-            rows[D] = reserveSeat("D", rows[D], seatNum, date)
+        user = SEATS[D_INDEX][seatNum].getUser()
+        if user.getEmail() == "None":
+            SEATS[D_INDEX] = reserveSeat("D", SEATS[D_INDEX], seatNum, date)
         else:
-            flash('This seat is already reserved', 'error') # flashes error message for next page being directed to
+            flash('This seat is already reserved', 'error')
             return redirect(url_for('seatview'))
     if(row == "E"):
-        if rows[E][seatNum].getEmail() == "None":
-            rows[E] = reserveSeat("E", rows[E], seatNum, date)
+        user = SEATS[E_INDEX][seatNum].getUser()
+        if user.getEmail() == "None":
+            SEATS[E_INDEX] = reserveSeat("E", SEATS[E_INDEX], seatNum, date)
         else:
-            flash('This seat is already reserved', 'error') # flashes error message for next page being directed to
+            flash('This seat is already reserved', 'error')
             return redirect(url_for('seatview'))
 
     return render_template('seatselect.html', name = session.get('firstName'), row = row, seat = seatNum + 1, date = date)
@@ -333,7 +334,7 @@ def StoreUser(form):
     session['password'] = user.getPassword()
 
 # reserves a seat for a user
-# takes in the row selected, the rows current values, the seat number selected and the current date
+# takes in the row selected, the SEATS current values, the seat number selected and the current date
 def reserveSeat(letter, row, seatNum, date):
     file = "data/concerts/" + date + "/" + letter + ".txt" # file's name based on date and row of the concert 
     # a user's first and last name is now stored in the current seat chosen
@@ -369,12 +370,16 @@ def reserveSeat(letter, row, seatNum, date):
 
     return row
 
-def reserveSeatOneFile(rows, letter, row, seatNum, date):
+def reserveSeatOneFile(SEATS, letter, row, seatNum, date):
     file = "data/concerts/" + date + "/seats.txt"
     
+    
     row[seatNum] = session.get('email')
-    selectedSeat = letter + str(seatNum + 1) # gives the real value of the seat number a user chose
-    # seatfile: gives the txt file that will be stored in a user's folder
+
+
+
+    selectedSeat = letter + str(seatNum + 1)
+    
     seatFile = "data/users/" + session.get('email') + "/reservations/" + date + ".txt" 
 
     if session.get('seat') is None: # if a user has no current seats at that date, creates new file and writes to it
@@ -399,19 +404,19 @@ def reserveSeatOneFile(rows, letter, row, seatNum, date):
 
     return row
 
-def loadSeats(rows, date):
+def loadSeats(SEATS, date):
     seatsFile = "data/concerts/"+date+"/seats.txt"
     with open(seatsFile) as f:
         lines = f.readlines()
 
         for i, line in enumerate(lines):
-            rows[i] = re.split(',|\n',line)
+            SEATS[i] = re.split(',|\n',line)
 
         f.close()
 
     price = 100
 
-    for row in rows:
+    for row in SEATS:
         seatNum = 1
         
         for seatIndex in range(0,NUM_SEATS):
@@ -447,27 +452,23 @@ def loadSeats(rows, date):
         seatLetter = chr(ord(seatLetter) + 1)
         price -= 10
 
-    # print(rows)
+    # print(SEATS)
 
-    return rows
+    return SEATS
 
 # clears the user's name from the txt file that contains the concert's seats
 # date: used to get the file under a user's name to determine what seats to cancel
 def cancelAnyReservationForUser(date):
-    global rowA
-    global rowB
-    global rowC
-    global rowD
-    global rowE
+    global SEATS
 
     user = session.get('firstName')+session.get('lastName')            
 
     # checks each row to see if user has a seat reserved
-    removeUser(user, date, "A", rowA)
-    removeUser(user, date, "B", rowB)
-    removeUser(user, date, "C", rowC)
-    removeUser(user, date, "D", rowD)
-    removeUser(user, date, "E", rowE)
+    removeUser(user, date, "A", SEATS[A_INDEX])
+    removeUser(user, date, "B", SEATS[B_INDEX])
+    removeUser(user, date, "C", SEATS[C_INDEX])
+    removeUser(user, date, "D", SEATS[D_INDEX])
+    removeUser(user, date, "E", SEATS[E_INDEX])
 
     file = "data/users/" + session.get('email') + "/" + date + ".txt"
     # clears the user's file with the data stored of the seat they reserved
