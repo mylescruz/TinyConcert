@@ -1,3 +1,9 @@
-May 05, 2023|Amine|8:00pm|amine.jpg|
-June 12, 2023|The Weeknd|8:00pm|theweeknd.jpg|
-July 25, 2023|Usher|8:00pm|usher.jpg|
+January 07, 2023|Amine|8:00pm|amine.jpg|
+February 04, 2023|The Weeknd|8:00pm|theweeknd.jpg|
+March 04, 2023|Usher|8:00pm|usher.jpg|
+April 01, 2023|Fleetwood Mac|8:00pm|fleetwoodmac.jpg|
+May 06, 2023|Luke Combs|8:00pm|lukecombs.jpg|
+June 03, 2023|MGMT|8:00pm|mgmt.jpg|
+July 01, 2023|Pixies|8:00pm|pixies.jpg|
+August 05, 2023|TLC|8:00pm|tlc.jpg|
+September 02, 2023|U2|8:00pm|u2.jpg|
