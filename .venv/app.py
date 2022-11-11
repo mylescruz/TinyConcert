@@ -8,7 +8,7 @@
 from flask import Flask, flash, render_template, session, redirect, url_for, request
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import DataRequired
+from wtforms.validators import DataRequired, EqualTo, Length, Regexp
 from concerts import *
 from seat import *
 from user import *
@@ -50,8 +50,9 @@ PASSWORD_INDEX = 3
 class RegisterForm(FlaskForm):
     firstName = StringField('First Name:', validators=[DataRequired()])
     lastName = StringField('Last Name:', validators=[DataRequired()])
-    email = StringField('Email:', validators=[DataRequired()])
-    password = StringField('Password: ', validators=[DataRequired()])
+    email = StringField('Email:', validators=[DataRequired(), Regexp(regex = "\w*\@\w*\.\w*",message = "Invalid email")])
+    password = StringField('Password: ', validators=[DataRequired(), Length(min = 8, max = 25, message = "Must be at least 8 characters"), EqualTo('confirm', message = 'Passwords must match')])
+    confirm = StringField('Repeat Password: ', validators=[DataRequired()])
     submit = SubmitField('Register')
 
 # Login form: allows user to login into website to access their information and check reservations
@@ -64,10 +65,10 @@ class LoginForm(FlaskForm):
 # make creditCard field a 16-digit validator
 # make expirationDate a 4-digit/1-character validator
 # make cvv field a 3-digit validator
-class TransactionForm(FlaskForm):
-    creditCard = StringField('Credit Card Number: ', validators=[DataRequired()])
-    expirationDate = StringField('Expiration Date (MM/YY): ', validators=[DataRequired()])
-    cvv = StringField('CVV: ', validators=[DataRequired()])
+class CheckoutForm(FlaskForm):
+    creditCard = StringField('Credit Card Number: ', validators=[DataRequired(), Length(min = 16, max = 16, message = "Invalid credit card number")])
+    expirationDate = StringField('Expiration Date (MM/YY): ', validators=[DataRequired(), Regexp(regex = "(0[1-9]|1[0-2])\/2[2-9]", message = "Invalid expiration date")])
+    cvv = StringField('CVV: ', validators=[DataRequired(), Length(min = 3, max = 4, message = "Must be at least 3 digits")])
     submit = SubmitField('Place Order')
 
 # Cancel reservation form: allows user to cancel any current reservations
@@ -203,6 +204,7 @@ def seatselect():
     row = request.args.get('row')
     number = request.args.get('seat')
     date = concert.getDate()
+    musician = concert.getMusician()
     price = request.args.get('price')
     seatNum = int(number)
     selectedSeat = row + str(seatNum + 1)
@@ -252,25 +254,33 @@ def seatselect():
     reserveSeatForConcert(seats, user, date)
     reserveSeatForUser(user, selectedSeat, date)
 
-    return render_template('seatselect.html', name = session.get('firstName'), row = row, seat = seatNum + 1, date = date, musician = concert.getMusician())
+    return render_template('seatselect.html', musician = musician, date = date, selectedSeat = selectedSeat)
 
 # transaction page for user to checkout
 @app.route("/checkout", methods = ['GET','POST'])
 def checkout():
-    seat = ''
-    date = ''
+    concert = getSessionConcert()
+    row = request.args.get('row')
+    number = request.args.get('seat')
+    date = concert.getDate()
+    musician = concert.getMusician()
+    price = request.args.get('price')
+    seatNum = int(number)
+    selectedSeat = row + str(seatNum + 1)
 
-    transactionForm = TransactionForm()
-    if transactionForm.validate_on_submit():
-        creditCard = transactionForm.creditCard.data
-        expirationDate = transactionForm.expirationDate.data
-        cvv = transactionForm.cvv.data
+    checkoutForm = CheckoutForm()
+    if checkoutForm.validate_on_submit():
+        creditCard = checkoutForm.creditCard.data
+        expirationDate = checkoutForm.expirationDate.data
+        cvv = checkoutForm.cvv.data
 
-        if creditCard is None | expirationDate is None | cvv is None:
+        if creditCard is None or expirationDate is None or cvv is None:
             flash('Invalid credit card','error')
             return redirect(url_for('checkout'))
+        else:
+            return redirect(url_for('seatselect', row = row, seat = seatNum, price = price))
 
-    return render_template('checkout.html', name = session.get('firstName'), seat = seat, dates = date)
+    return render_template('checkout.html', name = session.get('firstName'), checkoutForm = checkoutForm, musician = musician, seat = selectedSeat, date = date, price = price)
 
 # displays a user's current reservations and allows the ability to cancel a reservation
 @app.route("/reservation", methods = ['GET','POST'])

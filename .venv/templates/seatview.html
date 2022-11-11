@@ -19,7 +19,7 @@
             <tr>
               <td>{{ rows[i] }}</td>
               {% for j in range(0, numSeats) %}
-                <td><a class = "hovertext" data-hover = "${{seats[i][j].getPrice()}}" href="seatSelect?row={{rows[i]}}&seat={{j}}&price={{seats[i][j].getPrice()}}"><img src="{{seats[i][j].getIcon()}}" class = "seat"/></a></td>
+                <td><a class = "hovertext" data-hover = "${{seats[i][j].getPrice()}}" href="checkout?row={{rows[i]}}&seat={{j}}&price={{seats[i][j].getPrice()}}"><img src="{{seats[i][j].getIcon()}}" class = "seat"/></a></td>
               {% endfor %}
             </tr>
           {% endfor %}

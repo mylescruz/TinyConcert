@@ -6,9 +6,12 @@
 {% block page_content %}
 <div class="page-header">
     <h1>Seat Selection</h1>
-    Thank you {{ name }} for selecting seat: {{ row }}{{ seat }}
+    <p>Thank you for your purchase for {{ musician }} on {{ date }}</p>
+    <br>
+    <p> Your seat for the show is: {{ selectedSeat }}</p>
+    <br>
 </div>
 
-<button onclick="window.location.href='seatview?date={{date}}&musician={{musician}}'">Return</button>
+<button onclick="window.location.href='concerts'">Return</button>
 
 {% endblock %}
