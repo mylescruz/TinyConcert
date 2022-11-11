@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% if name %}{% extends "baselogin.html" %}{% else %}{% extends "base.html" %}{%endif %}
 {% import "bootstrap/wtf.html" as wtf %}
 
 {% block title %}Checkout{% endblock %}
