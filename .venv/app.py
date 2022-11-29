@@ -114,7 +114,7 @@ def login():
             if session.get('date') is None:
                 return redirect(url_for('concerts'))
             else:
-                return redirect(url_for('multipleseatview', date = session.get('date'), musician = session.get('musician')))
+                return redirect(url_for('seatview', date = session.get('date'), musician = session.get('musician')))
         else:
             flash('Incorrect login credentials. Please try again to login!','error')
             return redirect(url_for('login'))
@@ -152,23 +152,18 @@ def register():
 @app.route("/concerts")
 def concerts():
     concerts = Concerts()
-    print(concerts)
-    musicians = []
-    dates = []
-    times = []
-    images = []
+    
+    concertsList = []
 
     for key, value in concerts.concertsDict.items():
-        dates.append(key)
-        musicians.append(value.getMusician())
-        times.append(value.getTime())
-        images.append(value.getImage())
+        concertsList.append(value)
 
-    return render_template('concerts.html', musicians = musicians, dates = dates, times = times, images = images, numConcerts = NUM_CONCERTS, name = session.get('firstName'))
+    return render_template('concerts.html', concerts = concertsList, numConcerts = NUM_CONCERTS, name = session.get('firstName'))
 
 # displays the a concert's seats and their availability
 @app.route("/seatview", methods=['GET','POST'])
 def seatview():
+    global seatsDic
     global seats
     global ROWS
 
@@ -181,67 +176,55 @@ def seatview():
         flash('Must select a concert to view seats','error')
         return redirect(url_for('concerts'))
 
-    seats = loadSeats(seats, date)
-
+    loadSeats(seats, date)
     # print("seats: ")
     # pp.pp(seats)
     return render_template('seatview.html', reserved = RESERVED, available = EMPTY, seats = seats, rows = ROWS, musician = musician, date = date, numRows = NUM_ROWS, numSeats = NUM_SEATS, name = session.get('firstName'))
 
-# determines which row and seat was selected and allocates the data
-@app.route("/seatSelect", methods=['GET','POST'])
-def seatselect():
-    global seats, ROWS
+@app.route('/chosenSeats', methods = ['GET','POST'])
+def chosenSeats():
+    global seats
+    global seatsDic
+    global ROWS
     concert = getSessionConcert()
-    user = getSessionUser()
+    loadSeats(seats,concert.getDate())
+    selectedSeats = ""
+    chosenSeatNumbers = ""
+    totalPrice = 0
 
-    row = request.args.get('row')
-    number = request.args.get('seat')
-    date = concert.getDate()
-    musician = concert.getMusician()
-    price = request.args.get('price')
-    number = int(number)
-    selectedSeat = row + str(number + 1)
-    key = request.args.get('key')
+    if request.method == 'POST':
+        chosenSeats = request.form.getlist('chosenSeats')
+        for seatNumber in chosenSeats:
+            seat = seatsDic.get(int(seatNumber))
+            if seat.getUser().getEmail() != "None":
+                flash('This seat is already reserved', 'error')
+                return redirect(url_for('seatview',date = concert.getDate(), musician = concert.getMusician()))
 
-    seat = Seat(row, number + 1, user, price, RESERVED, key)
+            row = seat.getRow()
+            number = seat.getNumber()
+            selectedSeat = row + str(number)
+            selectedSeats += selectedSeat + " "
+            chosenSeatNumbers += seatNumber + " "
+            totalPrice += seat.getPrice()
 
-    for rowIndex, letter in enumerate(ROWS):
-        if letter == row:
-            seats[rowIndex][number] = seat
-
-    reserveSeatInConcertFile(seats, user, date)
-    reserveSeatInUserFile(user, selectedSeat, date)
-
-    return render_template('seatselect.html', musician = musician, date = date, selectedSeat = selectedSeat)
+    return redirect(url_for('checkout', totalPrice = totalPrice, selectedSeats = selectedSeats, chosenSeatNumbers = chosenSeatNumbers))
 
 
 # transaction page for user to checkout
 @app.route("/checkout", methods = ['GET','POST'])
 def checkout():
-
+    #totalPrice = price, theSeats = theSeats, chosenSeats = chosenSeats
     if session.get('email') is None:
         flash('Must login to reserve a seat','error')
         return redirect(url_for('login'))
 
-    global seats
-    global ROWS
-
     concert = getSessionConcert()
-    row = request.args.get('row')
-    number = request.args.get('seat')
-    price = request.args.get('price')
-    key = request.args.get('key')
+    price = request.args.get('totalPrice')
+    selectedSeats = request.args.get('selectedSeats')
+    chosenSeatNumbers = request.args.get('chosenSeatNumbers')
+
     date = concert.getDate()
     musician = concert.getMusician()
-    number = int(number)
-    selectedSeat = row + str(number + 1)
-
-    for rowIndex, letter in enumerate(ROWS):
-        if letter == row:
-            currentSeat = seats[rowIndex][number].getUser()
-            if currentSeat.getEmail() != "None":
-                flash('This seat is already reserved', 'error')
-                return redirect(url_for('seatview',date = concert.getDate(), musician = concert.getMusician()))
 
     checkoutForm = CheckoutForm()
     if checkoutForm.validate_on_submit():
@@ -253,9 +236,45 @@ def checkout():
             flash('Invalid credit card','error')
             return redirect(url_for('checkout'))
         else:
-            return redirect(url_for('seatselect', row = row, seat = number, key = key, price = price))
+            return redirect(url_for('seatselect', chosenSeatNumbers = chosenSeatNumbers))
 
-    return render_template('checkout.html', name = session.get('firstName'), checkoutForm = checkoutForm, musician = musician, seat = selectedSeat, date = date, price = price)
+    return render_template('checkout.html', name = session.get('firstName'), checkoutForm = checkoutForm, musician = musician, selectedSeats = selectedSeats, date = date, price = price)
+
+
+# Multiple seats: determines which row and seat was selected and allocates the data
+@app.route("/seatselect", methods=['GET','POST'])
+def seatselect():
+    global seats, ROWS, seatsDic
+    concert = getSessionConcert()
+    user = getSessionUser()
+
+    chosenSeats = ""
+    chosenSeatNumbers = request.args.get('chosenSeatNumbers')
+    selectedSeats = chosenSeatNumbers.split(" ")
+    selectedSeats.pop() # remove the last element in selectedSeats which is a ''
+
+    for seat in selectedSeats:
+        reservingSeat = seatsDic.get(int(seat))
+
+        row = reservingSeat.getRow()
+        number = reservingSeat.getNumber()
+        price = reservingSeat.getPrice()
+        key = int(seat)
+        selectedSeat = row + str(number)
+        chosenSeats += selectedSeat + " "
+
+        reservedSeat = Seat(row, number, user, price, RESERVED, key)
+
+        for rowIndex, letter in enumerate(ROWS):
+            if letter == row:
+                seats[rowIndex][number-1] = reservedSeat
+                seatsDic[key] = reservedSeat
+
+        reserveSeatInUserFile(user, selectedSeat, concert.getDate())
+
+    reserveSeatInConcertFile(seats, user, concert.getDate())
+
+    return render_template('seatselect.html', musician = concert.getMusician(), date = concert.getDate(), chosenSeats = chosenSeats)
 
 
 # displays a user's current reservations and allows the ability to cancel a reservation
@@ -269,16 +288,14 @@ def reservation():
         return redirect(url_for('login'))
 
     concerts = Concerts()
-    musicians = []
-    dates = []
+    concertsList = []
     reservedSeats = []
 
     for key, value in concerts.concertsDict.items():
         dateFile = "data/users/" + user.getEmail() + "/reservations/" + key + ".txt" 
         isDate = os.path.isfile(dateFile)
         if isDate:
-            dates.append(key)
-            musicians.append(value.getMusician())
+            concertsList.append(value)
             try: 
                 with open(dateFile,"r") as f:
                     line = f.readline()
@@ -288,7 +305,7 @@ def reservation():
                 flash('Internal error when retrieving seats. Please try again.','error')
                 return redirect(url_for('reservations'))
 
-    return render_template('reservation.html', name = session.get('firstName'), reservedSeats = reservedSeats, dates = dates, musicians = musicians, numReservations = len(dates))
+    return render_template('reservation.html', name = session.get('firstName'), reservedSeats = reservedSeats, concerts = concertsList, numReservations = len(concertsList))
 
 # confirmation page to cancel a reservation
 @app.route("/cancelreservation", methods = ['GET', 'POST'])
@@ -437,13 +454,12 @@ def reserveSeatInUserFile(user, selectedSeat, date):
             f.close()
 
 def cancelUserReservation(date):
-    print("In cancelUserReservation")
     global seats
 
-    seats = loadSeats(seats, date)
+    loadSeats(seats, date)
 
     user = getSessionUser()
-    seats = removeUserInConcerts(seats, user, date)
+    removeUserInConcerts(seats, user, date)
 
     # pp.pprint(seats)
     file = "data/concerts/" + date + "/seats.txt"
@@ -467,6 +483,7 @@ def cancelUserReservation(date):
     os.remove(userFile)
 
 def removeUserInConcerts(seats, user, date):
+    global seatsDic
     print("in removeUserInConcerts")
     file = "data/concerts/" + date + "/seats.txt"
 
@@ -494,6 +511,7 @@ def removeUserInConcerts(seats, user, date):
                     noUser = User(firstName, lastName, email, password)
                     userSeat = Seat(seatLetter, number, noUser, price, EMPTY, key)
                     seats[rowIndex][seatIndex] = userSeat
+                    seatsDic[key] = userSeat
                 number += 1
                 key += 1
             price -= 10
@@ -501,201 +519,4 @@ def removeUserInConcerts(seats, user, date):
 
         f.close()
     
-    return seats
-
-
-
-# MULTIPLE SEATS SECTION
-
-# displays the a concert's seats and their availability
-# Goes to chosenSeats
-@app.route("/multipleseatview", methods=['GET','POST'])
-def multipleseatview():
-    global seatsDic
-    global seats
-    global ROWS
-
-    date = request.args.get('date')
-    session['date'] = date
-    musician = request.args.get('musician')
-    session['musician'] = musician
-
-    if session.get('date') is None:
-        flash('Must select a concert to view seats','error')
-        return redirect(url_for('concerts'))
-
-    loadSeats(seats, date)
-    # print("seats: ")
-    # pp.pp(seats)
-    return render_template('multipleseatview.html', reserved = RESERVED, available = EMPTY, seats = seats, rows = ROWS, musician = musician, date = date, numRows = NUM_ROWS, numSeats = NUM_SEATS, name = session.get('firstName'))
-
-@app.route('/chosenSeats', methods = ['GET','POST'])
-def chosenSeats():
-    global seats
-    global seatsDic
-    global ROWS
-    date = getSessionConcert()
-    seats = loadSeats(seats,date.getDate())
-    theSeats = ""
-    chosenSeats = ""
-    price = 0
-
-    if request.method == 'POST':
-        # pp.pprint(request.form.getlist('chosenSeats'))
-        selectedSeats = request.form.getlist('selectedSeats')
-        print("chosenSeats in /chosenSeats: ", selectedSeats)
-        for seat in selectedSeats:
-            # print("seat: ", seat)
-            newSeat = seatsDic.get(int(seat))
-            if newSeat.getUser().getEmail() != "None":
-                flash('This seat is already reserved', 'error')
-                return redirect(url_for('multipleseatview',date = date.getDate(), musician = date.getMusician()))
-
-            row = newSeat.getRow()
-            number = newSeat.getNumber()
-            seatAndRow = row + str(number)
-            theSeats += seatAndRow + " "
-            chosenSeats += seat + " "
-            price += newSeat.getPrice()
-
-    return redirect(url_for('checkoutMultiple', totalPrice = price, theSeats = theSeats, chosenSeats = chosenSeats))
-
-
-# transaction page for user to checkout
-@app.route("/checkoutMultiple", methods = ['GET','POST'])
-def checkoutMultiple():
-    #totalPrice = price, theSeats = theSeats, chosenSeats = chosenSeats
-    if session.get('email') is None:
-        flash('Must login to reserve a seat','error')
-        return redirect(url_for('login'))
-
-    global seats
-    global ROWS
-
-    concert = getSessionConcert()
-    price = request.args.get('totalPrice')
-    theSeats = request.args.get('theSeats')
-    chosenSeats = request.args.get('chosenSeats')
-    # print("chosenSeats in CheckoutMultilple: ", chosenSeats)
-    # print(theSeats)
-    date = concert.getDate()
-    musician = concert.getMusician()
-    price = request.args.get('totalPrice')
-    # number = int(number)
-    # selectedSeat = row + str(number + 1)
-    # key = request.args.get('key')
-
-    # for rowIndex, letter in enumerate(ROWS):
-    #     if letter == row:
-    #         currentSeat = seats[rowIndex][number].getUser()
-    #         if currentSeat.getEmail() != "None":
-    #             flash('This seat is already reserved', 'error')
-    #             return redirect(url_for('seatview',date = concert.getDate(), musician = concert.getMusician()))
-
-    checkoutForm = CheckoutForm()
-    if checkoutForm.validate_on_submit():
-        creditCard = checkoutForm.creditCard.data
-        expirationDate = checkoutForm.expirationDate.data
-        cvv = checkoutForm.cvv.data
-
-        if creditCard is None or expirationDate is None or cvv is None:
-            flash('Invalid credit card','error')
-            return redirect(url_for('checkout'))
-        else:
-            return redirect(url_for('multipleseatselect', chosenSeats = chosenSeats))
-
-    return render_template('checkoutmultiple.html', name = session.get('firstName'), checkoutForm = checkoutForm, musician = musician, theSeats = theSeats, date = date, price = price)
-
-
-# Multiple seats: determines which row and seat was selected and allocates the data
-@app.route("/multipleSeatSelect", methods=['GET','POST'])
-def multipleseatselect():
-    global seats, ROWS, seatsDic
-    concert = getSessionConcert()
-    user = getSessionUser()
-
-    theSeats = ""
-    chosenSeats = request.args.get('chosenSeats')
-    selectedSeats = chosenSeats.split(" ")
-    selectedSeats.pop()
-    print("selectedSeats: ", selectedSeats)
-
-    for seat in selectedSeats:
-        reservingSeat = seatsDic.get(int(seat))
-
-        row = reservingSeat.getRow()
-        number = reservingSeat.getNumber()
-        price = reservingSeat.getPrice()
-        key = int(seat)
-        selectedSeat = row + str(number)
-        theSeats += selectedSeat + " "
-
-        reservedSeat = Seat(row, number, user, price, RESERVED, key)
-
-        for rowIndex, letter in enumerate(ROWS):
-            if letter == row:
-                seats[rowIndex][number-1] = reservedSeat
-                seatsDic[key] = reservedSeat
-
-        reserveSeatInUserFile(user, selectedSeat, concert.getDate())
-
-    reserveSeatInConcertFile(seats, user, concert.getDate())
-
-    return render_template('multipleseatselect.html', musician = concert.getMusician(), date = concert.getDate(), selectedSeats = theSeats)
-
-
-
-# load seats for a concerts
-def loadMultipleSeats(seats, date):
-    global seatsDic
-    seatsFile = "data/concerts/"+date+"/seats.txt"
-    with open(seatsFile) as f:
-        lines = f.read().splitlines()
-
-        for i, line in enumerate(lines):
-            seats[i] = line.split(',')
-
-        f.close()
-
-    price = 100
-    seatLetter = 'A'
-    key = 1
-
-    for row in seats:
-        number = 1
-        
-        for seat in row:
-            if seat == "None":
-                firstName = "None"
-                lastName = "None"
-                email = "None"
-                password = "None"
-                user = User(firstName, lastName, email, password)
-                userSeat = Seat(seatLetter, number, user, price, EMPTY, key)
-                seatsDic[userSeat.getKey()] = userSeat
-            else:
-                userFile = "data/users/" + seat + "/" + "info.txt"
-
-                try:
-                    open(userFile)
-                except IOError:
-                    flash('Internal error when loading seats. Please try again.','error')
-                    return redirect(url_for('concerts'))
-                
-                with open(userFile,"r") as f:
-                    line = f.readline()
-                    userDetails = line.split()
-                    user = User(userDetails[FIRST_NAME_INDEX], userDetails[LAST_NAME_INDEX], userDetails[EMAIL_INDEX], userDetails[PASSWORD_INDEX])
-                    f.close()
-
-                userSeat = Seat(seatLetter, number, user, price, RESERVED, key)
-                seatsDic[userSeat.getKey()] = userSeat
-            number += 1
-            key += 1
-        
-        seatLetter = chr(ord(seatLetter) + 1)
-        price -= 10
-
-    # pp.pprint(seats)
-
     return seats

@@ -15,12 +15,12 @@
             {% endif %}
         {% endwith %}
 
-        {% if dates %}
+        {% if concerts %}
             <div>
                 <h5> Your current reservation(s): </h5>
                 {% for i in range(0, numReservations) %}
-                    Date: {{ dates[i] }} Musician: {{ musicians[i] }} Seat(s): {{ reservedSeats[i] }}
-                    <button onclick="window.location.href='cancelreservation?date={{ dates[i] }}'">Cancel Reservation</button>
+                    Date: {{concerts[i].getDate()}} Musician: {{concerts[i].getMusician()}} Seat(s): {{ reservedSeats[i] }}
+                    <button onclick="window.location.href='cancelreservation?date={{ concerts[i].getDate() }}'">Cancel Reservation</button>
                     <br>
                 {% endfor %}
             </div>

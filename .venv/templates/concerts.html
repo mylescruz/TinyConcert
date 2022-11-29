@@ -19,64 +19,64 @@
     <tbody>
       <tr>
         {% for i in range(0, numConcerts//3) %}
-          <td><a href = "multipleseatview?date={{ dates[i] }}&musician={{ musicians[i] }}"><img src = "static/{{ images[i] }}" class = "musician-pic"></a></td>
+          <td><a href = "seatview?date={{ concerts[i].getDate() }}&musician={{ concerts[i].getMusician() }}"><img src = "static/{{ concerts[i].getImage() }}" class = "musician-pic"></a></td>
         {% endfor %}
       </tr>
       <tr>
         {% for i in range(0, numConcerts//3) %}
-          <td class = "musician-name">{{ musicians[i] }}</td>
+          <td class = "musician-name">{{ concerts[i].getMusician() }}</td>
         {% endfor %}
       </tr>
       <tr>
         {% for i in range(0, numConcerts//3) %}
-          <td class = "musician-date">{{ dates[i] }}</td>
+          <td class = "musician-date">{{ concerts[i].getDate() }}</td>
         {% endfor %}
       </tr>
       <tr>
         {% for i in range(0, numConcerts//3) %}
-          <td class = "musician-time">{{ times[i] }}</td>
+          <td class = "musician-time">{{ concerts[i].getTime() }}</td>
         {% endfor %}
       </tr>
 
       <tr>
         {% for i in range(numConcerts//3, numConcerts//3 * 2) %}
-          <td><a href = "multipleseatview?date={{ dates[i] }}&musician={{ musicians[i] }}"><img src = "static/{{ images[i] }}" class = "musician-pic"></a></td>
+          <td><a href = "seatview?date={{ concerts[i].getDate() }}&musician={{ concerts[i].getMusician() }}"><img src = "static/{{ concerts[i].getImage() }}" class = "musician-pic"></a></td>
         {% endfor %}
       </tr>
       <tr>
         {% for i in range(numConcerts//3, numConcerts//3 * 2) %}
-          <td class = "musician-name">{{ musicians[i] }}</td>
+          <td class = "musician-name">{{ concerts[i].getMusician() }}</td>
         {% endfor %}
       </tr>
       <tr>
         {% for i in range(numConcerts//3, numConcerts//3 * 2) %}
-          <td class = "musician-date">{{ dates[i] }}</td>
+          <td class = "musician-date">{{ concerts[i].getDate() }}</td>
         {% endfor %}
       </tr>
       <tr>
         {% for i in range(numConcerts//3, numConcerts//3 * 2) %}
-          <td class = "musician-time">{{ times[i] }}</td>
+          <td class = "musician-time">{{ concerts[i].getTime() }}</td>
         {% endfor %}
       </tr>
 
       <tr>
         {% for i in range(numConcerts//3 * 2, numConcerts) %}
-          <td><a href = "multipleseatview?date={{ dates[i] }}&musician={{ musicians[i] }}"><img src = "static/{{ images[i] }}" class = "musician-pic"></a></td>
+          <td><a href = "seatview?date={{ concerts[i].getDate() }}&musician={{ concerts[i].getMusician() }}"><img src = "static/{{ concerts[i].getImage() }}" class = "musician-pic"></a></td>
         {% endfor %}
       </tr>
       <tr>
         {% for i in range(numConcerts//3 * 2, numConcerts) %}
-          <td class = "musician-name">{{ musicians[i] }}</td>
+          <td class = "musician-name">{{ concerts[i].getMusician() }}</td>
         {% endfor %}
       </tr>
       <tr>
         {% for i in range(numConcerts//3 * 2, numConcerts) %}
-          <td class = "musician-date">{{ dates[i] }}</td>
+          <td class = "musician-date">{{ concerts[i].getDate() }}</td>
         {% endfor %}
       </tr>
       <tr>
         {% for i in range(numConcerts//3 * 2, numConcerts) %}
-          <td class = "musician-time">{{ times[i] }}</td>
+          <td class = "musician-time">{{ concerts[i].getTime() }}</td>
         {% endfor %}
       </tr>
     </tbody>
