@@ -19,7 +19,7 @@
     <tbody>
       <tr>
         {% for i in range(0, numConcerts//3) %}
-          <td><a href = "seatview?date={{ dates[i] }}&musician={{ musicians[i] }}"><img src = "static/{{ images[i] }}" class = "musician-pic"></a></td>
+          <td><a href = "multipleseatview?date={{ dates[i] }}&musician={{ musicians[i] }}"><img src = "static/{{ images[i] }}" class = "musician-pic"></a></td>
         {% endfor %}
       </tr>
       <tr>
@@ -40,7 +40,7 @@
 
       <tr>
         {% for i in range(numConcerts//3, numConcerts//3 * 2) %}
-          <td><a href = "seatview?date={{ dates[i] }}&musician={{ musicians[i] }}"><img src = "static/{{ images[i] }}" class = "musician-pic"></a></td>
+          <td><a href = "multipleseatview?date={{ dates[i] }}&musician={{ musicians[i] }}"><img src = "static/{{ images[i] }}" class = "musician-pic"></a></td>
         {% endfor %}
       </tr>
       <tr>
@@ -61,7 +61,7 @@
 
       <tr>
         {% for i in range(numConcerts//3 * 2, numConcerts) %}
-          <td><a href = "seatview?date={{ dates[i] }}&musician={{ musicians[i] }}"><img src = "static/{{ images[i] }}" class = "musician-pic"></a></td>
+          <td><a href = "multipleseatview?date={{ dates[i] }}&musician={{ musicians[i] }}"><img src = "static/{{ images[i] }}" class = "musician-pic"></a></td>
         {% endfor %}
       </tr>
       <tr>

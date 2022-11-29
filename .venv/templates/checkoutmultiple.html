@@ -1,0 +1,15 @@
+{% if name %}{% extends "baselogin.html" %}{% else %}{% extends "base.html" %}{%endif %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}Checkout{% endblock %}
+
+{% block page_content %}
+
+<div class="page-header">
+    <h1>{{ name }}, Please enter your credit card information below</h1>
+    <h3>Order Total for {{theSeats}} for {{ musician }} on {{ date }}: ${{ price }}</h3>
+    <br>
+    {{ wtf.quick_form(checkoutForm) }}
+</div>
+
+{% endblock %}

@@ -1,0 +1,17 @@
+{% if name %}{% extends "baselogin.html" %}{% else %}{% extends "base.html" %}{%endif %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}Tiny Concert{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Seat Selection</h1>
+    <p>Thank you for your purchase for {{ musician }} on {{ date }}</p>
+    <br>
+    <p> Your seats for the show is: {{ selectedSeats }}</p>
+    <br>
+</div>
+
+<button onclick="window.location.href='concerts'">Return</button>
+
+{% endblock %}

@@ -15,11 +15,11 @@
       </div>
       <table class = "center seats">
         <tbody>
-          {% for i in range(0, numRows) %}
+          {% for rowIndex in range(0, numRows) %}
             <tr>
-              <td>{{ rows[i] }}</td>
-              {% for j in range(0, numSeats) %}
-                <td><a class = "hovertext" data-hover = "${{seats[i][j].getPrice()}}" href="checkout?row={{rows[i]}}&seat={{j}}&price={{seats[i][j].getPrice()}}"><img src="{{seats[i][j].getIcon()}}" class = "seat"/></a></td>
+              <td>{{ rows[rowIndex] }}</td>
+              {% for seatIndex in range(0, numSeats) %}
+                <td><a class = "hovertext" data-hover = "${{seats[rowIndex][seatIndex].getPrice()}}" href="checkout?row={{rows[rowIndex]}}&seat={{seatIndex}}&price={{seats[rowIndex][seatIndex].getPrice()}}&num={{seats[rowIndex][seatIndex].getKey()}}"><img src="{{seats[rowIndex][seatIndex].getIcon()}}" class = "seat"/></a></td>
               {% endfor %}
             </tr>
           {% endfor %}

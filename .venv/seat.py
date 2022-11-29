@@ -1,18 +1,19 @@
 from user import *
 
 class Seat: 
-    def __init__(self, row, seatNum, user, price, icon):
+    def __init__(self, row, number, user, price, icon, key):
         self.row = row
-        self.seatNum = seatNum
+        self.number = number
         self.user = user
         self.price = price
         self.icon = icon
+        self.key = key
 
     def getRow(self):
         return self.row
 
-    def getSeatNumber(self):
-        return self.seatNum
+    def getNumber(self):
+        return self.number
 
     def getUser(self):
         return self.user
@@ -22,3 +23,6 @@ class Seat:
 
     def getIcon(self):
         return self.icon
+
+    def getKey(self):
+        return self.key

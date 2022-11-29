@@ -1,0 +1,62 @@
+{% if name %}{% extends "baselogin.html" %}{% else %}{% extends "base.html" %}{%endif %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %} Seats for {{ date }} {% endblock %}
+
+{% block page_content %}
+  <div class = "center-stack" id = "concert-details">
+      <h1>{{ musician }}</h1>
+      <h3>{{ date }}</h3>
+  </div>
+  <br>
+
+<form method = "POST" action = "/chosenSeats">
+<div class = "venue">
+    <div class = "center-stack">
+      <div class = "center" id = "stage">
+          STAGE
+      </div>
+      
+      
+      <table class = "center seats">
+        <tbody>
+          {% for rowIndex in range(0, numRows) %}
+            <tr>
+              <td>{{ rows[rowIndex] }}</td>
+              
+              {% for seatIndex in range(0, numSeats) %}
+              <td>
+                <input type="checkbox" name = "selectedSeats" id="seatCheckbox{{seats[rowIndex][seatIndex].getKey()}}" value = "{{seats[rowIndex][seatIndex].getKey()}}"/>
+                  <label for="seatCheckbox{{seats[rowIndex][seatIndex].getKey()}}"><img src="{{seats[rowIndex][seatIndex].getIcon()}}" class = "hovertext seat" data-hover = "${{seats[rowIndex][seatIndex].getPrice()}}" id="seatCheckbox{{seats[rowIndex][seatIndex].getKey()}}"/></label>
+              </td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>  
+    <div class = "center-stack" id = "legend">
+        <h4>Legend</h4>
+        <img src = "{{ available }}" class = "seat"> Available 
+        <img src = "{{ reserved }}" class = "seat"> Reserved
+    </div>
+  </div>
+
+  <button type="submit" class="btn">Submit</button> 
+</form> 
+      
+  <br>
+
+  <button onclick="window.location.href='concerts'">Return</button>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for msg in messages %}
+        <div class = "center">
+          <p style="color:red;">{{ msg }}</p>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+{% endblock %}
