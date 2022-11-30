@@ -4,13 +4,15 @@
 {% block title %} Seats for {{ date }} {% endblock %}
 
 {% block page_content %}
+
   <div class = "center-stack" id = "concert-details">
-      <h1>{{ musician }}</h1>
-      <h3>{{ date }}</h3>
+      <h4>{{ musician }}</h4>
+      <h5>{{ date }}</h5>
   </div>
   <br>
 
-<form method = "POST" action = "/chosenSeats">
+<div class = "page-container">
+<form method = "POST" action = "/chosenseats">
 <div class = "venue">
     <div class = "center-stack">
       <div class = "center" id = "stage">
@@ -25,29 +27,37 @@
               <td>{{ rows[rowIndex] }}</td>
               
               {% for seatIndex in range(0, numSeats) %}
-              <td>
-                <input type="checkbox" name = "chosenSeats" id="seatCheckbox{{seats[rowIndex][seatIndex].getKey()}}" value = "{{seats[rowIndex][seatIndex].getKey()}}"/>
-                  <label for="seatCheckbox{{seats[rowIndex][seatIndex].getKey()}}"><img src="{{seats[rowIndex][seatIndex].getIcon()}}" class = "hovertext seat" data-hover = "${{seats[rowIndex][seatIndex].getPrice()}}" id="seatCheckbox{{seats[rowIndex][seatIndex].getKey()}}"/></label>
-              </td>
+              {% if seats[rowIndex][seatIndex].getIcon() == reserved %}
+                <td>
+                  <img src="{{seats[rowIndex][seatIndex].getIcon()}}" class = "reservedSeat"/>
+                </td>
+              {% else %}
+                <td>
+                  <input type="checkbox" name = "chosenSeats" id="seatCheckbox{{seats[rowIndex][seatIndex].getKey()}}" value = "{{seats[rowIndex][seatIndex].getKey()}}"/>
+                  <label for="seatCheckbox{{seats[rowIndex][seatIndex].getKey()}}"><img src="{{seats[rowIndex][seatIndex].getIcon()}}" class = "seat hovertext" data-hover = "Seat: {{seats[rowIndex][seatIndex].getRow()}}{{seats[rowIndex][seatIndex].getNumber()}} ${{seats[rowIndex][seatIndex].getPrice()}}" id="seatCheckbox{{seats[rowIndex][seatIndex].getKey()}}"/></label>
+                </td>
+              {% endif %}
               {% endfor %}
             </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>  
+
     <div class = "center-stack" id = "legend">
         <h4>Legend</h4>
-        <img src = "{{ available }}" class = "seat"> Available 
-        <img src = "{{ reserved }}" class = "seat"> Reserved
+        <img src = "{{ available }}" class = "seatLegend"> Available 
+        <img src = "{{ reserved }}" class = "seatLegend"> Reserved
     </div>
   </div>
 
   <button type="submit" class="btn">Submit</button> 
-</form> 
+  </form> 
       
   <br>
 
   <button onclick="window.location.href='concerts'">Return</button>
+</div>
 
   {% with messages = get_flashed_messages() %}
     {% if messages %}

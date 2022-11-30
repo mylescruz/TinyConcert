@@ -1,36 +1,61 @@
+.page-container {
+  margin-left: 12.5%;
+  margin-right: 12.5%;
+}
 /* login.html */
 .login-container {
     width: 50%;
 }
 
 /* concerts.html */
+.concerts {
+  width: 100%;
+}
+
+.concerts-title {
+  margin-bottom: 25px;
+}
+.concerts td{
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-bottom: 20px;
+}
+
 .musician-pic {
     width: 300px;
     height: 200px;
-    border-radius: 25px;
-    margin-left: 50px;
-    margin-right:50px;
+    border-radius: 15px;
 }
 
 .musician-name {
     font-size: 20px;
     font-weight: bold;
-    text-align: center;
 }
 
 .musician-date, .musician-time {
     font-size: 16px;
-    text-align: center;
+}
+
+.concert-details {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 /* seatview.html */
 .seat {
+    height: 40px;
+    width: 40px;
+}
+
+.seatLegend {
     height: 25px;
     width: 25px;
 }
 
 .seat:hover {
-    background-color: #0000CD;
+    background-color: lightgray;
 }
 
 .center {
@@ -54,16 +79,16 @@
     background-color: #000000;
     color: #FFFFFF; 
     height: 50px; 
-    width: 300px; 
+    width: 500px; 
     font-size: 40px;
     margin: 10px;
 }
 
 #concert-details {
-    width: 100%;
-    height: 150px;
-    background-color: #0000CD;
-    color: #FFFFFF;
+    width: auto;
+    height: 100px;
+    background-color: lightgray;
+    color: black;
 }
 
 .seats td{
@@ -78,33 +103,33 @@
     justify-content: center;
 }
 
+
 /* hover text */
 .hovertext {
-    position: relative;
-    border-bottom: 1px dotted black;
+  position: relative;
 }
 
 .hovertext:before {
-    content: attr(data-hover);
-    visibility: hidden;
-    opacity: 0;
-    width: 50px;
-    background-color: black;
-    color: #fff;
-    text-align: center;
-    border-radius: 5px;
-    padding: 5px 0;
-    transition: opacity 1s ease-in-out;
+  content: attr(data-hover);
+  visibility: hidden;
+  opacity: 0;
+  width: 50px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  border-radius: 5px;
+  padding: 5px 0;
+  transition: opacity 1s ease-in-out;
 
-    position: absolute;
-    z-index: 1;
-    left: 0;
-    top: 110%;
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  top: 110%;
 }
 
 .hovertext:hover:before {
-    opacity: 1;
-    visibility: visible;
+  opacity: 1;
+  visibility: visible;
 }
 
 /* multipleseatview.html */
@@ -121,11 +146,11 @@ ul {
   }
   
   label {
-    border: 1px solid #fff;
-    padding: 10px;
+    /* border: 1px solid #fff; */
+    padding: 3px;
     display: block;
     position: relative;
-    margin: 10px;
+    margin: 3px;
     cursor: pointer;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
@@ -134,14 +159,23 @@ ul {
     -ms-user-select: none;
     user-select: none;
   }
+
+  .reservedSeat {
+    height: 45px;
+    width: 45px;
+    padding: 3px;
+    display: block;
+    position: relative;
+    margin: 3px;
+  }
   
   label::before {
-    background-color: white;
+    /* background-color: white; */
     color: white;
     content: " ";
     display: block;
     border-radius: 50%;
-    border: 1px solid grey;
+    /* border: 1px solid grey; */
     position: absolute;
     top: -5px;
     left: -5px;

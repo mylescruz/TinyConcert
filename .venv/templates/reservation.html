@@ -1,11 +1,11 @@
 {% if name %}{% extends "baselogin.html" %}{% else %}{% extends "base.html" %}{%endif %}
 {% import "bootstrap/wtf.html" as wtf %}
 
-{% block title %}Tiny Concert{% endblock %}
+{% block title %}Reservations{% endblock %}
 
 {% block page_content %}
 
-<div class="page-header">
+<div class="page-header page-container">
     <h1>Hello {{name }}</h1>
         {% with messages = get_flashed_messages() %}
             {% if messages %}

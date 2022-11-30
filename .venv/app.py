@@ -35,6 +35,7 @@ seatsDic = {}
 NUM_CONCERTS = 9
 NUM_ROWS = 5
 NUM_SEATS = 10
+TOTAL_SEATS = NUM_ROWS * NUM_SEATS
 ROWS = ["A","B","C","D","E"]
 EMPTY = "/static/empty.png"
 RESERVED = "/static/occupied.png"
@@ -63,7 +64,7 @@ class LoginForm(FlaskForm):
 # make expirationDate a 4-digit/1-character validator
 # make cvv field a 3-digit validator
 class CheckoutForm(FlaskForm):
-    creditCard = StringField('Credit Card Number: ', validators=[DataRequired(), Length(min = 16, max = 16, message = "Invalid credit card number")])
+    creditCard = StringField('Credit Card Number: ', validators=[DataRequired(), Length(min = 15, max = 16, message = "Invalid credit card number")])
     expirationDate = StringField('Expiration Date (MM/YY): ', validators=[DataRequired(), Regexp(regex = "(1[1-2]\/2[2-9])|((0[1-9]|1[0-2])\/2[3-9])", message = "Invalid expiration date")])
     cvv = StringField('CVV: ', validators=[DataRequired(), Length(min = 3, max = 4, message = "Must be at least 3 digits")])
     submit = SubmitField('Place Order')
@@ -77,8 +78,12 @@ class ConfirmationForm(FlaskForm):
 @app.route("/", methods = ['GET'])
 def index():
     session.clear()
-    return redirect(url_for('concerts'))
+    return redirect(url_for('home'))
     #return render_template('index.html', name=session.get('firstName'))
+
+@app.route("/home", methods = ['GET'])
+def home():
+    return redirect(url_for('concerts'))
 
 # Login for an existing user
 @app.route("/login", methods=['GET', 'POST'])
@@ -127,7 +132,7 @@ def logout():
     session.clear()
 
     flash("Logout successful!")
-    return redirect(url_for('login'))
+    return redirect(url_for('home'))
 
 # Registration for a new user
 @app.route("/register", methods=['GET','POST'])
@@ -163,7 +168,6 @@ def concerts():
 # displays the a concert's seats and their availability
 @app.route("/seatview", methods=['GET','POST'])
 def seatview():
-    global seatsDic
     global seats
     global ROWS
 
@@ -171,17 +175,15 @@ def seatview():
     session['date'] = date
     musician = request.args.get('musician')
     session['musician'] = musician
-
-    if session.get('date') is None:
-        flash('Must select a concert to view seats','error')
-        return redirect(url_for('concerts'))
+    session['time'] = request.args.get('time')
+    session['image'] = request.args.get('image')
 
     loadSeats(seats, date)
-    # print("seats: ")
-    # pp.pp(seats)
+    # pp.pprint(seats)
+
     return render_template('seatview.html', reserved = RESERVED, available = EMPTY, seats = seats, rows = ROWS, musician = musician, date = date, numRows = NUM_ROWS, numSeats = NUM_SEATS, name = session.get('firstName'))
 
-@app.route('/chosenSeats', methods = ['GET','POST'])
+@app.route("/chosenseats", methods = ['GET','POST'])
 def chosenSeats():
     global seats
     global seatsDic
@@ -196,9 +198,6 @@ def chosenSeats():
         chosenSeats = request.form.getlist('chosenSeats')
         for seatNumber in chosenSeats:
             seat = seatsDic.get(int(seatNumber))
-            if seat.getUser().getEmail() != "None":
-                flash('This seat is already reserved', 'error')
-                return redirect(url_for('seatview',date = concert.getDate(), musician = concert.getMusician()))
 
             row = seat.getRow()
             number = seat.getNumber()
@@ -209,11 +208,9 @@ def chosenSeats():
 
     return redirect(url_for('checkout', totalPrice = totalPrice, selectedSeats = selectedSeats, chosenSeatNumbers = chosenSeatNumbers))
 
-
 # transaction page for user to checkout
 @app.route("/checkout", methods = ['GET','POST'])
 def checkout():
-    #totalPrice = price, theSeats = theSeats, chosenSeats = chosenSeats
     if session.get('email') is None:
         flash('Must login to reserve a seat','error')
         return redirect(url_for('login'))
@@ -236,14 +233,13 @@ def checkout():
             flash('Invalid credit card','error')
             return redirect(url_for('checkout'))
         else:
-            return redirect(url_for('seatselect', chosenSeatNumbers = chosenSeatNumbers))
+            return redirect(url_for('bookseats', chosenSeatNumbers = chosenSeatNumbers))
 
     return render_template('checkout.html', name = session.get('firstName'), checkoutForm = checkoutForm, musician = musician, selectedSeats = selectedSeats, date = date, price = price)
 
-
 # Multiple seats: determines which row and seat was selected and allocates the data
-@app.route("/seatselect", methods=['GET','POST'])
-def seatselect():
+@app.route("/bookseats", methods=['GET','POST'])
+def bookseats():
     global seats, ROWS, seatsDic
     concert = getSessionConcert()
     user = getSessionUser()
@@ -274,17 +270,16 @@ def seatselect():
 
     reserveSeatInConcertFile(seats, user, concert.getDate())
 
-    return render_template('seatselect.html', musician = concert.getMusician(), date = concert.getDate(), chosenSeats = chosenSeats)
+    return render_template('bookseats.html', musician = concert.getMusician(), date = concert.getDate(), chosenSeats = chosenSeats)
 
 
 # displays a user's current reservations and allows the ability to cancel a reservation
 @app.route("/reservation", methods = ['GET','POST'])
 def reservation():
-    
     user = getSessionUser()
 
-    if user.getEmail() is None: # a user must login to view their current reservations
-        flash('Must login to see your reservation') # flashes error message for next page being directed to
+    if user.getEmail() is None:
+        flash('Must login to see your reservation')
         return redirect(url_for('login'))
 
     concerts = Concerts()
@@ -320,7 +315,7 @@ def cancelreservation():
         else:
             flash('Wrong information inputted. Please try again to cancel the reservation.', 'error') # flashes error message for next page being directed to
             return redirect(url_for('cancelreservation'))
-    return render_template('cancelreservation.html', confirmationForm = confirmationForm, name=session.get('firstName'))
+    return render_template('cancelreservation.html', confirmationForm = confirmationForm, name = session.get('firstName'))
 
 # Stores a new user's first name, last name, email and password in a folder
 def StoreUser(form):
